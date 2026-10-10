@@ -1,51 +1,29 @@
-NEON CARDBOARD VR 3 — PURPLE WOLF
-=================================
+NEON CARDBOARD VR 4 — GAMEPAD + WEbXR (PROTÓTIPO)
+===================================================
 
-Esta versão usa um avatar 3D estilizado inspirado no furry preto e roxo da referência.
-Inclui movimento, cristais coletáveis, modo Cardboard lado a lado e tentativa experimental
-de pinça com a câmera (MediaPipe). O avatar é feito de formas 3D simples, não é um modelo
-de fursuit realista nem uma malha 3D importada.
+NOVIDADES
+- Gamepad API: analógico esquerdo move, analógico direito olha; botão A/✕ tenta coletar o cristal apontado.
+- Câmera com suavização para reduzir movimentos bruscos.
+- Botão “Tentar VR 6DoF”: tenta iniciar uma sessão WebXR immersive-vr quando suportada pelo navegador e headset.
+- Mantém modo Cardboard lado a lado como fallback e mantém controles por teclado/toque.
 
-COMO TESTAR
-1. Extraia o ZIP.
-2. Hospede a pasta em um endereço HTTPS (veja as instruções abaixo), ou use um servidor local.
-3. Abra index.html no navegador compatível.
-4. Toque em “Entrar no mundo”; para Cardboard, toque em “Ativar modo VR”.
-5. Para hand tracking, use “Ativar hand tracking” e permita a câmera. A câmera frontal pode
-   ficar bloqueada quando o celular estiver dentro do Cardboard.
+PUBLICAR A ATUALIZAÇÃO
+1. Extraia este ZIP no computador.
+2. No repositório GitHub que você já criou, entre no repositório.
+3. Clique em Add file > Upload files.
+4. Envie o novo index.html e confirme em Commit changes, substituindo o antigo.
+5. Aguarde o GitHub Pages atualizar. Recarregue o site no celular; se necessário, feche e abra a página novamente.
 
-COMO COLOCAR HTTPS (mais fácil: GitHub Pages)
-A) No computador:
-   1. Entre em https://github.com e crie uma conta/entre.
-   2. Crie um repositório novo, por exemplo neon-cardboard-vr.
-   3. Extraia este ZIP e envie index.html (e os demais arquivos, se houver) para o repositório.
-   4. Abra Settings > Pages.
-   5. Em “Build and deployment”, selecione “Deploy from a branch”.
-   6. Escolha a branch “main” e a pasta “/(root)”, depois Save.
-   7. Aguarde alguns minutos. O GitHub mostrará um endereço parecido com
-      https://SEU-USUARIO.github.io/neon-cardboard-vr/
-   8. Abra esse endereço no Chrome do celular. O endereço precisa começar com https://.
+USAR JOY-CONS / GAMEPAD
+1. Ligue o controle e emparelhe por Bluetooth no Android ou conecte ao computador por USB/Bluetooth.
+2. Abra o jogo no Chrome e entre no mundo.
+3. Pressione qualquer botão no controle se necessário para o navegador detectar.
+4. Analógico esquerdo: andar; analógico direito: olhar; botão A (ou equivalente/✕): coletar o cristal que está no centro da visão.
+A compatibilidade depende do controle, sistema e navegador. Joy-Con esquerdo/direito podem aparecer como dispositivos separados ou com mapeamento diferente; alguns navegadores não os mapeiam no padrão “standard”.
 
-B) Alternativa: Netlify Drop
-   1. Extraia o ZIP no computador.
-   2. Acesse https://app.netlify.com/drop e entre/crie conta se for solicitado.
-   3. Arraste a pasta extraída para a página.
-   4. Abra o endereço https://...netlify.app que ele fornecer no celular.
-
-C) Teste local no computador
-   Se tiver Python instalado, abra um terminal dentro da pasta e execute:
-       python -m http.server 8000
-   Isso serve a página em HTTP local para testes comuns, mas não substitui HTTPS para
-   permissões de câmera/sensores em outros dispositivos. Para abrir no próprio computador:
-       http://localhost:8000
-   Para usar no celular pela rede Wi-Fi, precisa configurar o endereço local do computador;
-   algumas permissões podem não funcionar sem HTTPS.
-
-IMPORTANTE
-- O HTTPS é necessário para o navegador liberar com segurança recursos como câmera e sensores
-  em muitos contextos. Não é algo que se “ativa” dentro do HTML: o site precisa ser hospedado
-  em um serviço que forneça HTTPS.
-- O modo VR é uma apresentação estereoscópica simples; não tem toda a correção óptica de um
-  aplicativo nativo oficial do Cardboard.
-- Hand tracking é experimental e requer conexão para baixar bibliotecas/modelo via CDN.
-- Não é APK Android; é um protótipo web. Não foi testado em aparelho real nesta sessão.
+SOBRE 6DoF — IMPORTANTE
+- 3DoF: acompanha rotação da cabeça (olhar para cima/baixo, esquerda/direita e inclinação). É o que normalmente dá para fazer com o telefone/Cardboard e sensores.
+- 6DoF: acompanha rotação E deslocamento físico da cabeça (frente/trás, lados, cima/baixo). Requer headset/sistema com tracking posicional e suporte WebXR immersive-vr.
+- O botão WebXR apenas tenta iniciar 6DoF se o navegador e o hardware o suportarem. Um telefone comum dentro do Google Cardboard normalmente NÃO fornece tracking posicional 6DoF por si só. Se não suportar, use o modo Cardboard 3DoF.
+- Não é APK nativo. O jogo continua sendo um protótipo web; bibliotecas Three.js/MediaPipe carregam de CDNs.
+- O reconhecimento de mãos experimental pode falhar se a câmera estiver bloqueada pelo visor.

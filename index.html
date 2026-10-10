@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#09051a"><title>Neon Cardboard VR 2 — Furry Explorer</title>
+<meta name="theme-color" content="#09051a"><title>Neon Cardboard VR 4 — Gamepad & XR</title>
 <style>
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05030d;color:#fff;font-family:system-ui,Arial;touch-action:none}
 #view{position:fixed;inset:0}#hud{position:fixed;left:0;right:0;top:0;text-align:center;padding:10px;background:linear-gradient(#05030ddd,transparent);pointer-events:none;text-shadow:0 2px 8px #000}
@@ -20,14 +20,14 @@ button.secondary{background:#24203a;border:1px solid #6f6294}
 body.vr #hud,body.vr #hint{display:none}
 </style></head>
 <body>
-<div id="view"></div><div id="hud"><h1>NEON CARDBOARD VR 3 · PURPLE WOLF</h1><div id="status">Cristais: 0 / 12 · WASD/toque para mover</div></div>
-<div id="crosshair"></div><div id="toast"></div><div id="hint">PC: WASD + mouse • Celular: arraste para olhar e use os botões • mão: faça pinça para coletar</div>
-<div id="handstatus">Mãos: desligado</div><video id="cam" playsinline muted></video>
+<div id="view"></div><div id="hud"><h1>NEON CARDBOARD VR 3 · PURPLE WOLF</h1><div id="status">Cristais: 0 / 12 · gamepad, teclado ou toque</div></div>
+<div id="crosshair"></div><div id="toast"></div><div id="hint">WASD / gamepad • analógico direito olha • A/✕ coleta • celular: arraste para olhar</div>
+<div id="handstatus">Mãos: desligado</div><div id="padstatus" style="position:fixed;left:8px;top:74px;background:#100b22cc;padding:6px 8px;border-radius:8px;font-size:11px;z-index:3">Gamepad: procurando…</div><video id="cam" playsinline muted></video>
 <div id="menu"><div class="panel"><h2>🐺 NEON CARDBOARD VR 3</h2>
 <p>Agora com personagem furry jogável e suporte experimental a gestos pela câmera. A câmera identifica gestos no navegador; não é o hand tracking nativo do Cardboard.</p>
 <p><b>Movimento:</b> WASD no PC ou controles na tela. <b>Olhar:</b> arraste na tela ou use o sensor do celular. <b>Pinça:</b> junte polegar e indicador para tentar coletar o cristal mirado.</p>
-<button id="start">Entrar no mundo</button><br><button id="vr" class="secondary">Ativar modo VR</button><button id="hands" class="secondary">Ativar hand tracking</button>
-<p style="font-size:11px;opacity:.8">Hand tracking usa câmera e MediaPipe Tasks Vision carregado por CDN; requer HTTPS e permissão. Se não iniciar, o jogo continua jogável com toque/teclado.</p></div></div>
+<button id="start">Entrar no mundo</button><br><button id="vr" class="secondary">Cardboard lado a lado</button><button id="xr" class="secondary">Tentar VR 6DoF</button><button id="pad" class="secondary">Ver controles gamepad</button><button id="hands" class="secondary">Ativar hand tracking</button>
+<p style="font-size:11px;opacity:.8">Gamepad: analógico esquerdo move, direito olha; A/✕ coleta. VR 6DoF só funciona se o navegador e o headset oferecerem WebXR imersivo. HTTPS necessário.</p></div></div>
 <div id="mobile" style="position:fixed;bottom:16px;left:12px;z-index:3;display:none">
 <button data-move="forward">▲</button><br><button data-move="left">◀</button><button data-move="back">▼</button><button data-move="right">▶</button>
 </div>
@@ -36,7 +36,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 const root=document.querySelector('#view'), status=document.querySelector('#status'), menu=document.querySelector('#menu'), toast=document.querySelector('#toast'), video=document.querySelector('#cam'), handstatus=document.querySelector('#handstatus');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x070416);scene.fog=new THREE.Fog(0x070416,20,80);
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,120);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.setScissorTest(true);renderer.outputColorSpace=THREE.SRGBColorSpace;root.appendChild(renderer.domElement);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.setScissorTest(true);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.xr.enabled=true;root.appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0x9b8cff,0x151027,2));
 const light=new THREE.PointLight(0x8b5cf6,36,40);light.position.set(0,5,0);scene.add(light);
 const gl=new THREE.PointLight(0x20ff9b,20,25);gl.position.set(-6,2,-8);scene.add(gl);
@@ -71,15 +71,30 @@ const tail= new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([ne
 furry.position.set(0,0,4);
 const mats=[new THREE.MeshStandardMaterial({color:0x9b5cff,emissive:0x5b18ff,emissiveIntensity:1.5,metalness:.3,roughness:.25}),new THREE.MeshStandardMaterial({color:0x38ffad,emissive:0x00a85e,emissiveIntensity:1.4,metalness:.25,roughness:.22})];
 const targets=[];for(let i=0;i<12;i++){const a=i*Math.PI*2/12,r=5+(i%3)*2;const m=new THREE.Mesh(i%2?new THREE.OctahedronGeometry(.42):new THREE.IcosahedronGeometry(.42,0),mats[i%2]);m.position.set(Math.cos(a)*r,1.2+(i%3)*.75,-Math.sin(a)*r-3);m.userData={collected:false};scene.add(m);const h=new THREE.Mesh(new THREE.TorusGeometry(.58,.025,8,36),new THREE.MeshBasicMaterial({color:i%2?0x20ff9b:0xb27aff}));h.position.copy(m.position);h.rotation.x=Math.PI/2;scene.add(h);m.userData.halo=h;targets.push(m);}
-let started=false,vr=false,score=0,lastTarget=null,gazeTime=0,handModel=null,handActive=false,pinchWas=false;
+let started=false,vr=false,xrSession=null,score=0,lastTarget=null,gazeTime=0,handModel=null,handActive=false,pinchWas=false;
 const raycaster=new THREE.Raycaster(),center=new THREE.Vector2(0,0);
-let yaw=0,pitch=0,dragging=false,lastX=0,lastY=0;const keys={};let move={forward:false,back:false,left:false,right:false};
+let yaw=0,pitch=0,dragging=false,lastX=0,lastY=0;let smoothYaw=0,smoothPitch=0;const keys={};let move={forward:false,back:false,left:false,right:false};const padstatus=document.querySelector('#padstatus');let padLookX=0,padLookY=0,padMoveX=0,padMoveY=0;
 addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;});addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
 renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;if(started)collectByRay();});addEventListener('pointerup',()=>dragging=false);
 addEventListener('pointermove',e=>{if(dragging&&!vr){yaw-=(e.clientX-lastX)*.004;pitch-=(e.clientY-lastY)*.003;pitch=Math.max(-1.25,Math.min(1.25,pitch));lastX=e.clientX;lastY=e.clientY;}});
 document.querySelectorAll('[data-move]').forEach(b=>{const k=b.dataset.move;const on=()=>move[k]=true,off=()=>move[k]=false;b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointerleave',off);});
 async function sensor(){try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){if(await DeviceOrientationEvent.requestPermission()!=='granted')return;}addEventListener('deviceorientation',e=>{if(e.alpha==null||dragging)return;yaw=THREE.MathUtils.degToRad(e.alpha);pitch=THREE.MathUtils.degToRad((e.beta||90)-90);pitch=Math.max(-1.25,Math.min(1.25,pitch));},{passive:true});}catch(e){}}
-function enterVR(){vr=!vr;document.body.classList.toggle('vr',vr);document.querySelector('#vr').textContent=vr?'Sair do modo VR':'Ativar modo VR';toast.textContent=vr?'VR lado a lado ativado':'';setTimeout(()=>toast.textContent='',1800);}
+function enterVR(){vr=!vr;document.body.classList.toggle('vr',vr);document.querySelector('#vr').textContent=vr?'Sair do Cardboard':'Cardboard lado a lado';toast.textContent=vr?'VR lado a lado ativado (3DoF aproximado)':'';setTimeout(()=>toast.textContent='',1800);}
+document.querySelector('#xr').onclick=async()=>{
+ try {
+   if(!navigator.xr) throw new Error('Este navegador não disponibiliza WebXR.');
+   const supported=await navigator.xr.isSessionSupported('immersive-vr');
+   if(!supported) throw new Error('WebXR immersive-vr não é compatível neste navegador/dispositivo.');
+   const session=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor','bounded-floor','hand-tracking']});
+   xrSession=session;vr=false;document.body.classList.remove('vr');
+   renderer.xr.enabled=true;await renderer.xr.setSession(session);
+   document.querySelector('#xr').textContent='Sair do VR 6DoF';
+   session.addEventListener('end',()=>{xrSession=null;document.querySelector('#xr').textContent='Tentar VR 6DoF';});
+   toast.textContent='Sessão WebXR iniciada';setTimeout(()=>toast.textContent='',1800);
+ } catch(e) { toast.textContent=e.message||'Não foi possível iniciar WebXR';setTimeout(()=>toast.textContent='',3200); }
+};
+document.querySelector('#pad').onclick=()=>{toast.textContent='Gamepad: conecte por Bluetooth/USB e mova um analógico';setTimeout(()=>toast.textContent='',2600);};
+
 document.querySelector('#vr').onclick=()=>{enterVR();};
 document.querySelector('#start').onclick=async()=>{await sensor();started=true;menu.style.display='none';document.querySelector('#mobile').style.display='block';status.textContent='Cristais: 0 / 12 · encontre todos!';};
 function collectByRay(){raycaster.setFromCamera(center,camera);const hit=raycaster.intersectObjects(targets.filter(t=>!t.userData.collected),false);if(hit.length)collect(hit[0].object);}
@@ -97,17 +112,37 @@ function handLoop(){if(handActive&&handModel&&video.readyState>=2){try{const res
  if(pinch&&!pinchWas)collectByRay();pinchWas=pinch;
  }catch(e){}}
 }
-function update(){requestAnimationFrame(update);const t=performance.now()*.001;
+function pollGamepad(dt){
+ const pads=navigator.getGamepads?navigator.getGamepads():[];
+ let p=null;for(const g of pads){if(g&&g.connected){p=g;break;}}
+ if(!p){padstatus.textContent='Gamepad: não conectado';padLookX=padLookY=padMoveX=padMoveY=0;return;}
+ const dz=v=>Math.abs(v||0)<.16?0:v;
+ padMoveX=dz(p.axes[0]);padMoveY=dz(p.axes[1]);padLookX=dz(p.axes[2]);padLookY=dz(p.axes[3]);
+ padstatus.textContent='Gamepad: '+(p.id||'conectado')+' · analógicos ativos';
+ if(p.buttons[0]?.pressed) { if(!pollGamepad.wasPressed) collectByRay(); pollGamepad.wasPressed=true; }
+ else pollGamepad.wasPressed=false;
+}
+function update(){requestAnimationFrame(update);const t=performance.now()*.001;pollGamepad(.016);
+ // Damped camera input reduces jitter and makes mouse/touch/gamepad look smoother.
+ if(!xrSession){yaw += padLookX * .035; pitch += padLookY * .028;pitch=THREE.MathUtils.clamp(pitch,-1.25,1.25);
+ smoothYaw += (yaw-smoothYaw)*.22;smoothPitch += (pitch-smoothPitch)*.22;}
+
  const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
- const v=new THREE.Vector3();if(keys.w||keys.arrowup||move.forward)v.add(forward);if(keys.s||keys.arrowdown||move.back)v.sub(forward);if(keys.a||keys.arrowleft||move.left)v.sub(right);if(keys.d||keys.arrowright||move.right)v.add(right);if(v.lengthSq())v.normalize().multiplyScalar(.075);
+ const v=new THREE.Vector3();
+ if(keys.w||keys.arrowup||move.forward)v.add(forward);if(keys.s||keys.arrowdown||move.back)v.sub(forward);
+ if(keys.a||keys.arrowleft||move.left)v.sub(right);if(keys.d||keys.arrowright||move.right)v.add(right);
+ v.add(forward.clone().multiplyScalar(-padMoveY));v.add(right.clone().multiplyScalar(padMoveX));
+ if(v.lengthSq())v.normalize().multiplyScalar(.085);
  furry.position.add(v);furry.position.x=THREE.MathUtils.clamp(furry.position.x,-18,18);furry.position.z=THREE.MathUtils.clamp(furry.position.z,-28,18);
  furry.rotation.y=yaw+Math.PI;furry.position.y=Math.sin(t*5)*(v.lengthSq()?0.025:0.006);
- camera.position.set(furry.position.x, furry.position.y+1.58, furry.position.z+0.05);camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
+ camera.position.set(furry.position.x, furry.position.y+1.58, furry.position.z+0.05);camera.rotation.order='YXZ';if(!xrSession)camera.rotation.set(smoothPitch,smoothYaw,0);
  targets.forEach((m,i)=>{if(!m.userData.collected){m.rotation.y+=.008;m.position.y=1.2+(i%3)*.75+Math.sin(t*1.5+i)*.12;m.userData.halo.position.copy(m.position);}});
  if(started){raycaster.setFromCamera(center,camera);const hits=raycaster.intersectObjects(targets.filter(x=>!x.userData.collected),false),tar=hits.length?hits[0].object:null;if(tar===lastTarget&&tar)gazeTime+=.016;else{lastTarget=tar;gazeTime=0;}if(tar&&gazeTime>1.8){collect(tar);gazeTime=0;}}
  handLoop();
- if(vr){const w=Math.floor(innerWidth/2),h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setScissor(0,0,w,h);renderer.setViewport(0,0,w,h);camera.position.x-=.032;renderer.render(scene,camera);camera.position.x+=.064;renderer.setScissor(w,0,w,h);renderer.setViewport(w,0,w,h);renderer.render(scene,camera);camera.position.x-=.032;}
+ if(xrSession){renderer.setScissorTest(false);renderer.render(scene,camera);renderer.setScissorTest(true);}
+ else if(vr){const w=Math.floor(innerWidth/2),h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setScissor(0,0,w,h);renderer.setViewport(0,0,w,h);camera.position.x-=.032;renderer.render(scene,camera);camera.position.x+=.064;renderer.setScissor(w,0,w,h);renderer.setViewport(w,0,w,h);renderer.render(scene,camera);camera.position.x-=.032;}
  else{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setScissor(0,0,innerWidth,innerHeight);renderer.setViewport(0,0,innerWidth,innerHeight);renderer.render(scene,camera);}
 }
-update();addEventListener('resize',()=>renderer.setSize(innerWidth,innerHeight));
+update();addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();});
+addEventListener('gamepadconnected',e=>{padstatus.textContent='Gamepad conectado: '+e.gamepad.id;});addEventListener('gamepaddisconnected',()=>{padstatus.textContent='Gamepad desconectado';});
 </script></body></html>
