@@ -1,0 +1,51 @@
+NEON CARDBOARD VR 3 — PURPLE WOLF
+=================================
+
+Esta versão usa um avatar 3D estilizado inspirado no furry preto e roxo da referência.
+Inclui movimento, cristais coletáveis, modo Cardboard lado a lado e tentativa experimental
+de pinça com a câmera (MediaPipe). O avatar é feito de formas 3D simples, não é um modelo
+de fursuit realista nem uma malha 3D importada.
+
+COMO TESTAR
+1. Extraia o ZIP.
+2. Hospede a pasta em um endereço HTTPS (veja as instruções abaixo), ou use um servidor local.
+3. Abra index.html no navegador compatível.
+4. Toque em “Entrar no mundo”; para Cardboard, toque em “Ativar modo VR”.
+5. Para hand tracking, use “Ativar hand tracking” e permita a câmera. A câmera frontal pode
+   ficar bloqueada quando o celular estiver dentro do Cardboard.
+
+COMO COLOCAR HTTPS (mais fácil: GitHub Pages)
+A) No computador:
+   1. Entre em https://github.com e crie uma conta/entre.
+   2. Crie um repositório novo, por exemplo neon-cardboard-vr.
+   3. Extraia este ZIP e envie index.html (e os demais arquivos, se houver) para o repositório.
+   4. Abra Settings > Pages.
+   5. Em “Build and deployment”, selecione “Deploy from a branch”.
+   6. Escolha a branch “main” e a pasta “/(root)”, depois Save.
+   7. Aguarde alguns minutos. O GitHub mostrará um endereço parecido com
+      https://SEU-USUARIO.github.io/neon-cardboard-vr/
+   8. Abra esse endereço no Chrome do celular. O endereço precisa começar com https://.
+
+B) Alternativa: Netlify Drop
+   1. Extraia o ZIP no computador.
+   2. Acesse https://app.netlify.com/drop e entre/crie conta se for solicitado.
+   3. Arraste a pasta extraída para a página.
+   4. Abra o endereço https://...netlify.app que ele fornecer no celular.
+
+C) Teste local no computador
+   Se tiver Python instalado, abra um terminal dentro da pasta e execute:
+       python -m http.server 8000
+   Isso serve a página em HTTP local para testes comuns, mas não substitui HTTPS para
+   permissões de câmera/sensores em outros dispositivos. Para abrir no próprio computador:
+       http://localhost:8000
+   Para usar no celular pela rede Wi-Fi, precisa configurar o endereço local do computador;
+   algumas permissões podem não funcionar sem HTTPS.
+
+IMPORTANTE
+- O HTTPS é necessário para o navegador liberar com segurança recursos como câmera e sensores
+  em muitos contextos. Não é algo que se “ativa” dentro do HTML: o site precisa ser hospedado
+  em um serviço que forneça HTTPS.
+- O modo VR é uma apresentação estereoscópica simples; não tem toda a correção óptica de um
+  aplicativo nativo oficial do Cardboard.
+- Hand tracking é experimental e requer conexão para baixar bibliotecas/modelo via CDN.
+- Não é APK Android; é um protótipo web. Não foi testado em aparelho real nesta sessão.
